@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Idempotent script to stop/remove existing Portainer, pull latest image and run container
-# Location: maintenance/deploy-portainer.sh
+# Location: maintenance/linux/upgrade-portainer.sh
 
 DOCKER_BIN=docker
 if [ "$EUID" -ne 0 ]; then
@@ -48,9 +48,7 @@ echo "[portainer] Starting container '$NAME'..."
 $DOCKER_CMD run -d -p 9000:9000 -p 8000:8000 \
   --name $NAME --restart always \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ${VOLUME_NAME}:/data \
+  -v $VOLUME_NAME:/data \
   $IMAGE
 
-echo "[portainer] Done. Access Portainer UI at: http://<YOUR_SERVER_IP>:9000"
-
-exit 0
+echo "[portainer] Portainer upgrade completed."
