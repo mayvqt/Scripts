@@ -14,6 +14,11 @@ fi
 echo "== Maintenance: AMP Panel upgrade =="
 echo "Running as: $(date)"
 
+if ! command -v runuser >/dev/null 2>&1; then
+  echo "runuser was not found. Cannot switch to the amp user safely."
+  exit 2
+fi
+
 # Run ampinstmgr upgradeall as the 'amp' user. Use runuser for non-interactive execution.
 runuser -l amp -c 'if command -v ampinstmgr >/dev/null 2>&1; then ampinstmgr upgradeall; else echo "ampinstmgr not found in PATH for user amp"; exit 2; fi'
 

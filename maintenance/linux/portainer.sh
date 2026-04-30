@@ -14,10 +14,12 @@ fi
 IMAGE="portainer/portainer-ce:latest"
 NAME="portainer"
 VOLUME_NAME="portainer_data"
+HTTP_PORT="${HTTP_PORT:-9000}"
+EDGE_PORT="${EDGE_PORT:-8000}"
 
 echo "[portainer] Using command: $DOCKER_CMD"
 
-if ! command -v $DOCKER_BIN >/dev/null 2>&1; then
+if ! command -v "$DOCKER_BIN" >/dev/null 2>&1; then
   echo "Error: docker not found. Install Docker or run this on a host with Docker available." >&2
   exit 2
 fi
@@ -45,7 +47,7 @@ else
 fi
 
 echo "[portainer] Starting container '$NAME'..."
-$DOCKER_CMD run -d -p 9000:9000 -p 8000:8000 \
+$DOCKER_CMD run -d -p "$HTTP_PORT":9000 -p "$EDGE_PORT":8000 \
   --name $NAME --restart always \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v $VOLUME_NAME:/data \

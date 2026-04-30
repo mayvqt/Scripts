@@ -15,20 +15,19 @@ if %errorLevel% neq 0 (
 echo == Maintenance: Windows Update ==
 echo Started: %date% %time%
 
-REM Start Windows Update service if not running
 echo Starting Windows Update service...
 net start wuauserv 2>nul
+net start bits 2>nul
 
-REM Check for updates and install them
 echo Checking for and installing Windows updates...
-powershell -Command "Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot" 2>nul
+powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Get-Command Install-WindowsUpdate -ErrorAction SilentlyContinue) { Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot } else { UsoClient StartScan; UsoClient StartDownload; UsoClient StartInstall }"
 
 if errorlevel 1 (
-    echo Note: PowerShell Windows Update module may not be installed on this system.
+    echo Note: Automated update install may not be available on this system.
     echo Please check Windows Update manually through Settings ^> Update ^& Security.
 )
 
 echo.
 echo Finished: %date% %time%
 echo System may require restart to complete updates.
-pause
+if not "%NO_PAUSE%"=="1" pause

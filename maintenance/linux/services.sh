@@ -9,7 +9,8 @@ fi
 echo "== Optimization: Disable unnecessary services ==="
 echo "Started: $(date)"
 
-# List of commonly unnecessary services (modify based on your environment)
+DRY_RUN="${DRY_RUN:-0}"
+
 SERVICES_TO_DISABLE=(
   "avahi-daemon"
   "cups"
@@ -20,10 +21,16 @@ SERVICES_TO_DISABLE=(
 
 echo "Checking for unnecessary services..."
 for service in "${SERVICES_TO_DISABLE[@]}"; do
-  if systemctl list-unit-files | grep -q "^$service"; then
-    echo "Disabling $service..."
-    systemctl disable "$service" 2>/dev/null || true
-    systemctl stop "$service" 2>/dev/null || true
+  if systemctl list-unit-files "${service}.service" >/dev/null 2>&1; then
+    if [ "$DRY_RUN" = "1" ]; then
+      echo "Would disable and stop $service"
+    else
+      echo "Disabling $service..."
+      systemctl disable "$service" 2>/dev/null || true
+      systemctl stop "$service" 2>/dev/null || true
+    fi
+  else
+    echo "Skipping $service; service not installed."
   fi
 done
 

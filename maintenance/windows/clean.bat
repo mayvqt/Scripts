@@ -15,26 +15,26 @@ if %errorLevel% neq 0 (
 echo == Maintenance: cleanup temporary files ==
 echo Started: %date% %time%
 
-REM Delete temp files from user temp folder
 echo Cleaning user temporary files...
-del /Q /S "%TEMP%\*" 2>nul
+forfiles /p "%TEMP%" /s /m *.* /d -7 /c "cmd /c del /q @path" 2>nul
+for /d %%D in ("%TEMP%\*") do rd /s /q "%%D" 2>nul
 
-REM Delete temp files from system temp folder
 echo Cleaning system temporary files...
-del /Q /S "%SystemRoot%\Temp\*" 2>nul
+forfiles /p "%SystemRoot%\Temp" /s /m *.* /d -7 /c "cmd /c del /q @path" 2>nul
+for /d %%D in ("%SystemRoot%\Temp\*") do rd /s /q "%%D" 2>nul
 
-REM Delete temporary internet files
 echo Cleaning internet temporary files...
-del /Q /S "%LocalAppData%\Microsoft\Windows\INetCache\*" 2>nul
+RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 8
 
-REM Delete recent files
 echo Cleaning recent files...
 del /Q /S "%AppData%\Microsoft\Windows\Recent\*" 2>nul
 
-REM Empty Recycle Bin
 echo Emptying Recycle Bin...
-powershell -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+powershell -NoProfile -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+
+echo Running component cleanup...
+Dism.exe /Online /Cleanup-Image /StartComponentCleanup
 
 echo.
 echo Finished: %date% %time%
-pause
+if not "%NO_PAUSE%"=="1" pause
