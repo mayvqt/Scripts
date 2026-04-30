@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Idempotent script to stop/remove existing Portainer, pull latest image and run container
-# Location: maintenance/linux/upgrade-portainer.sh
+# Location: linux/portainer.sh
 
 DOCKER_BIN=docker
 if [ "$EUID" -ne 0 ]; then

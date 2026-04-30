@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKUP_ROOT="${BACKUP_ROOT:-$HOME/server-maintenance-backups}"
+BACKUP_ROOT="${BACKUP_ROOT:-$HOME/sysadmin-script-backups}"
 STAMP="$(date '+%Y%m%d-%H%M%S')"
 DEST="$BACKUP_ROOT/$STAMP"
 

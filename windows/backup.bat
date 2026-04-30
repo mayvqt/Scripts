@@ -4,7 +4,7 @@ REM Maintenance: Windows configuration snapshot
 setlocal
 
 set BACKUP_ROOT=%BACKUP_ROOT%
-if "%BACKUP_ROOT%"=="" set BACKUP_ROOT=%SystemDrive%\server-maintenance-backups
+if "%BACKUP_ROOT%"=="" set BACKUP_ROOT=%SystemDrive%\sysadmin-script-backups
 
 for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set STAMP=%%I
 set DEST=%BACKUP_ROOT%\%STAMP%

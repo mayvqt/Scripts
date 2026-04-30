@@ -1,172 +1,187 @@
-# Maintenance Scripts
+# Cross-Platform Admin Scripts
 
-Cross-platform maintenance scripts with short names. The repo is organized around two ideas:
+Short, practical scripts for routine server and workstation care. The repo is organized directly by platform:
 
-- **Routine actions** are safe to run regularly: update, clean, logs, disk, health, security, network, backup.
-- **Repair actions** are opt-in: repair and netfix can change system state more aggressively and should be run when something is broken.
+```text
+.
+├── run.sh
+├── run.bat
+├── linux/
+├── macos/
+└── windows/
+```
+
+Routine actions handle updates, cleanup, logs, backups, and reports. Repair actions are separate and opt-in.
 
 ## Quick Start
 
-Use the launcher when you want the shortest command. On Linux and macOS it auto-detects the platform:
+On Linux and macOS, `run.sh` auto-detects the platform:
 
 ```bash
-maintenance/run.sh health
-maintenance/run.sh network
-sudo maintenance/run.sh all
-sudo maintenance/run.sh repair
+./run.sh health
+./run.sh network
+sudo ./run.sh all
+sudo ./run.sh repair
 ```
 
 On Windows:
 
 ```cmd
-maintenance\run.bat health
-maintenance\run.bat network
-maintenance\run.bat all
-maintenance\run.bat repair
+run.bat health
+run.bat network
+run.bat all
+run.bat repair
 ```
 
-You can also run scripts directly from each platform folder.
+You can also run scripts directly from `linux/`, `macos/`, or `windows/`.
 
-## Action Guide
+## Actions
 
-| Action | Purpose | Notes |
+| Action | Purpose | Risk |
 | --- | --- | --- |
-| `all` | Run the main routine maintenance flow | Does not run repair scripts |
-| `update` | Install OS and package updates | Linux targets apt-based systems |
-| `clean` | Remove temp files and package caches | Conservative age-based cleanup |
-| `logs` | Clean old logs or log archives | Some platforms require admin/root |
-| `disk` | Disk usage, trim/optimize, read-only checks | Does not force offline repairs |
+| `all` | Run the main routine flow | Routine |
+| `update` | Install OS and package updates | Routine |
+| `clean` | Remove temp files and package caches | Routine |
+| `logs` | Clean old logs or log archives | Routine |
+| `disk` | Disk usage, trim/optimize, read-only checks | Routine |
 | `health` | System health report | Read-only |
 | `security` | Security posture report | Read-only |
 | `network` | Network report | Read-only |
-| `backup` | Configuration snapshot | Not a full bare-metal backup |
-| `repair` | Package/component/file integrity repair | Opt-in; admin/root recommended |
-| `netfix` | DNS/network stack repair | May interrupt networking |
+| `backup` | Configuration snapshot | Routine |
+| `repair` | Package/component/file integrity repair | Opt-in |
+| `netfix` | DNS/network stack repair | Opt-in |
+
+The `all` scripts intentionally skip `repair` and `netfix`.
 
 ## Linux
 
-Path: `maintenance/linux`
-
 ```text
-all.sh        Run routine Linux maintenance
-update.sh     apt update, upgrade, autoremove, autoclean
-clean.sh      Clean apt cache, temp files, optional Docker prune
-logs.sh       Vacuum journal and old rotated logs
-disk.sh       Trim filesystems, report disk usage and large files
-memory.sh     Drop caches and tune temporary memory sysctls
-health.sh     Read-only system health report
-security.sh   Read-only security and SSH posture report
-network.sh    Read-only network report
-users.sh      User, sudo/admin, and SSH key audit
-backup.sh     Snapshot packages, services, /etc, /opt, /srv, /var/www
-repair.sh     Repair dpkg/apt state, reset failed systemd units, verify journal
-netfix.sh     Flush DNS/neighbor cache; optionally restart network services
-docker.sh     Docker disk and container report; optional prune
-services.sh   Disable selected optional services
-portainer.sh  Upgrade/recreate Portainer container
-amp.sh        Upgrade AMP as the amp user
+linux/
+├── all.sh
+├── amp.sh
+├── backup.sh
+├── clean.sh
+├── disk.sh
+├── docker.sh
+├── health.sh
+├── logs.sh
+├── memory.sh
+├── netfix.sh
+├── network.sh
+├── portainer.sh
+├── repair.sh
+├── security.sh
+├── services.sh
+├── update.sh
+└── users.sh
 ```
 
 Examples:
 
 ```bash
-sudo maintenance/linux/all.sh
-maintenance/linux/health.sh
-maintenance/linux/security.sh
-sudo maintenance/linux/backup.sh
-sudo maintenance/linux/repair.sh
-sudo maintenance/linux/netfix.sh
-RESTART_NETWORK=1 sudo maintenance/linux/netfix.sh
-maintenance/linux/docker.sh
-PRUNE=1 maintenance/linux/docker.sh
-DRY_RUN=1 sudo maintenance/linux/services.sh
+sudo linux/all.sh
+linux/health.sh
+linux/security.sh
+sudo linux/backup.sh
+sudo linux/repair.sh
+sudo linux/netfix.sh
+RESTART_NETWORK=1 sudo linux/netfix.sh
+linux/docker.sh
+PRUNE=1 linux/docker.sh
+DRY_RUN=1 sudo linux/services.sh
 ```
 
-Linux environment overrides:
+Linux notes:
 
-- `BACKUP_ROOT=/path`: change backup destination for `backup.sh`.
-- `PRUNE=1`: let `docker.sh` run `docker system prune -f`.
-- `RESTART_NETWORK=1`: let `netfix.sh` restart network services.
-- `DRY_RUN=1`: preview `services.sh` without disabling services.
-- `HTTP_PORT=9001 EDGE_PORT=8001`: change `portainer.sh` published ports.
+- `update.sh`: apt update, upgrade, autoremove, autoclean.
+- `backup.sh`: snapshots packages, services, `/etc`, `/opt`, `/srv`, and `/var/www`.
+- `repair.sh`: repairs dpkg/apt state, resets failed systemd units, verifies journal health.
+- `netfix.sh`: flushes DNS and neighbor caches. Set `RESTART_NETWORK=1` to restart network services.
+- `docker.sh`: reports Docker usage. Set `PRUNE=1` to run `docker system prune -f`.
+- `services.sh`: set `DRY_RUN=1` to preview service changes.
+- `portainer.sh`: supports `HTTP_PORT` and `EDGE_PORT` overrides.
+- Backup default: `/var/backups/sysadmin-scripts`.
 
 ## macOS
 
-Path: `maintenance/macos`
-
 ```text
-all.sh       Run routine macOS maintenance
-update.sh    Apple software update check/install and Homebrew update
-clean.sh     Clean old user caches, temp files, Trash, Homebrew cache
-logs.sh      Clean old system diagnostic and archived logs
-disk.sh      Verify root volume and report disk/cache state
-health.sh    Read-only system health report
-security.sh  Read-only firewall, FileVault, Gatekeeper, admin report
-network.sh   Read-only network report
-backup.sh    Snapshot system profile, launch items, Brewfile, /etc
-repair.sh    Disk repair when run with sudo, plus Homebrew health checks
-netfix.sh    Flush DNS cache and renew DHCP leases
+macos/
+├── all.sh
+├── backup.sh
+├── clean.sh
+├── disk.sh
+├── health.sh
+├── logs.sh
+├── netfix.sh
+├── network.sh
+├── repair.sh
+├── security.sh
+└── update.sh
 ```
 
 Examples:
 
 ```bash
-maintenance/macos/all.sh
-maintenance/macos/health.sh
-maintenance/macos/security.sh
-maintenance/macos/backup.sh
-sudo maintenance/macos/logs.sh
-sudo maintenance/macos/repair.sh
-maintenance/macos/netfix.sh
+macos/all.sh
+macos/health.sh
+macos/security.sh
+macos/backup.sh
+sudo macos/logs.sh
+sudo macos/repair.sh
+macos/netfix.sh
 ```
 
-macOS environment overrides:
+macOS notes:
 
-- `BACKUP_ROOT=/path`: change backup destination for `backup.sh`.
+- `update.sh`: Apple software update check/install and Homebrew update.
+- `backup.sh`: snapshots system profile, launch items, Brewfile, and `/etc`.
+- `repair.sh`: verifies or repairs the root volume and runs Homebrew health checks.
+- `netfix.sh`: flushes DNS and renews DHCP leases.
+- Backup default: `$HOME/sysadmin-script-backups`.
 
 ## Windows
 
-Path: `maintenance\windows`
-
 ```text
-all.bat          Run routine Windows maintenance
-update.bat       Windows Update scan/install
-clean.bat        Temp cleanup, recycle bin, component cleanup
-logs.bat         Clear event logs and old diagnostic logs
-disk.bat         Optimize volumes and run read-only chkdsk scans
-performance.bat  Conservative performance cleanup
-health.bat       Read-only system health report
-security.bat     Read-only firewall, Defender, admin, port report
-network.bat      Read-only network report
-backup.bat       Snapshot systeminfo, drivers, services, tasks, firewall policy
-repair.bat       DISM RestoreHealth, SFC, and online disk scans
-netfix.bat       Flush DNS, renew DHCP, reset Winsock/IP stack
-services.bat     Disable selected optional services
+windows\
+├── all.bat
+├── backup.bat
+├── clean.bat
+├── disk.bat
+├── health.bat
+├── logs.bat
+├── netfix.bat
+├── network.bat
+├── performance.bat
+├── repair.bat
+├── security.bat
+├── services.bat
+└── update.bat
 ```
 
 Examples:
 
 ```cmd
-maintenance\windows\all.bat
-maintenance\windows\health.bat
-maintenance\windows\security.bat
-maintenance\windows\backup.bat
-maintenance\windows\repair.bat
-maintenance\windows\netfix.bat
+windows\all.bat
+windows\health.bat
+windows\security.bat
+windows\backup.bat
+windows\repair.bat
+windows\netfix.bat
 ```
 
 Windows notes:
 
 - Run from an elevated Command Prompt or PowerShell session for full results.
-- `BACKUP_ROOT=C:\path`: change backup destination for `backup.bat`.
-- `repair.bat` can take a while because DISM and SFC are thorough.
-- `netfix.bat` may require a restart after resetting Winsock and IP state.
+- `backup.bat`: snapshots systeminfo, drivers, services, scheduled tasks, and firewall policy.
+- `repair.bat`: runs DISM RestoreHealth, SFC, and online disk scans.
+- `netfix.bat`: flushes DNS, renews DHCP, and resets Winsock/IP state.
+- `disk.bat`: optimizes volumes and runs read-only chkdsk scans.
+- Backup default: `%SystemDrive%\sysadmin-script-backups`.
 
-## Safety Notes
+## Safety
 
-- The `all` scripts intentionally skip `repair` and `netfix`.
-- The diagnostic scripts are designed to be read-only: `health`, `security`, `network`, and `users`.
-- Repair scripts can change package state, reset services, repair components, or reset networking.
-- Backup scripts create configuration snapshots for recovery notes; they are not full image backups.
+- `health`, `security`, `network`, and `users` are designed as read-only diagnostics.
+- `repair` and `netfix` are opt-in because they can change package state, reset services, repair components, or reset networking.
+- Backup scripts create configuration snapshots for recovery notes. They are not full image backups.
 - Review `services` scripts before running them on shared, managed, or production machines.
 - Keep real backups before running repair work on important systems.

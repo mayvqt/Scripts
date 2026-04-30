@@ -6,7 +6,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-BACKUP_ROOT="${BACKUP_ROOT:-/var/backups/server-maintenance}"
+BACKUP_ROOT="${BACKUP_ROOT:-/var/backups/sysadmin-scripts}"
 STAMP="$(date '+%Y%m%d-%H%M%S')"
 DEST="$BACKUP_ROOT/$STAMP"
 
